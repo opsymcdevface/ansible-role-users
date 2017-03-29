@@ -1,0 +1,10 @@
+{%- set groupname = users_group.name %}
+{%- set groupcmd = users_group.name|upper ~ '_CMD' %}
+
+{%- if users_group.name != 'sysadmins' %}
+Cmnd_Alias {{ groupcmd }} = {{ users_group.sudo|join(', ') }}
+{{ '%'~groupname }} ALL=(ALL) NOPASSWD:{{ groupcmd }}
+{%- elif users_group.name == 'sysadmins' %}
+{{ '%'~groupname }} ALL=(ALL) NOPASSWD:ALL
+Defaults !requiretty
+{% endif -%}

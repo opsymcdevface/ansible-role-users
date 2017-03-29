@@ -1,0 +1,4 @@
+testing-role-users-el7 ansible_connection=docker
+
+[all]
+testing-role-users-el7

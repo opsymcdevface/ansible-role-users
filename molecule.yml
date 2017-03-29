@@ -1,0 +1,44 @@
+---
+molecule:
+  test:
+    sequence:
+      - destroy
+      - syntax
+      - create
+      - converge
+      - verify
+
+driver:
+  name: docker
+
+docker:
+  containers:
+    - name: testing-role-users-el7
+      image: chrismeyers/centos7
+      image_version: latest
+      privileged: True
+      ansible_groups:
+        - all
+
+ansible:
+  timeout: 30
+  ask_sudo_pass: False
+  ask_vault_pass: False
+  vault_password_file: ~/.vault
+  limit: all
+  verbose: False
+  diff: True
+  tags: False
+  host_key_checking: False
+  raw_ssh_args:
+    - -o UserKnownHostsFile=/dev/null
+    - -o IdentitiesOnly=yes
+    - -o ControlMaster=auto
+    - -o ControlPersist=60s
+  galaxy: {}
+  inventory_file: tests/inventory
+  config_file: tests/ansible.cfg
+  playbook: tests/playbook.yml
+
+verifier:
+  name: testinfra

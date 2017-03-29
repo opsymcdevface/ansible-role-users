@@ -1,0 +1,38 @@
+---
+- name: Include group variables for "{{ group_name }}"
+  include_vars: "vars/groups/{{ group_name }}.yml"
+
+- name: Create user list
+  set_fact:
+    users_list: "{{ users_group.members }}"
+
+- name: Create users group
+  group:
+    name: "{{ users_group.name }}"
+    state: present
+
+- name: Create users
+  user:
+    name: "{{ item }}"
+    state: present
+    createhome: yes
+    generate_ssh_key: no
+    groups: "{{ users_group.name }}"
+  with_items: "{{ users_list }}"
+
+- name: Create sudo rules
+  template:
+    src: group.sudoers.d.j2
+    dest: "/etc/sudoers.d/99-{{ users_group.name }}"
+    owner: root
+    group: root
+    mode: 0440
+    validate: 'visudo -c -f %s'
+  when: users_group.sudo | length > 0
+
+- name: Add public SSH key to authorized key file
+  authorized_key:
+    user:  "{{ item }}"
+    key: "{{ lookup('file', 'files/pubkeys/'~item~'.pub') }}"
+    manage_dir: no
+  with_items: "{{ users_list }}"
